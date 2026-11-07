@@ -1,0 +1,13 @@
+node_modules/
+.test-data*/
+verification/
+references/
+output/
+.repro-debug*/
+.reproduction-test-tmp/
+.env
+.env.*
+!.env.example
+*.log
+.DS_Store
+Thumbs.db
