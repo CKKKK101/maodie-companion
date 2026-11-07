@@ -1,8 +1,14 @@
-# 桌面耄耋：这只猫会记仇
+# 桌面耄耋
 
-基于已复现的 [Edwardpch/maodie-pet](https://github.com/Edwardpch/maodie-pet) 动画包与 [dsh-pet](https://github.com/PC2005-cloud/dsh-pet) 桌面运行时，新增一个独立的 DSH 插件 `maodie-life`。
+**这只猫会记仇，也会慢慢记住你。**
 
-一只有脾气、会记住你的称呼、能陪你专注并提醒待办的桌面橘猫。当前版本 **v0.4.2**，Windows 本机已运行验证。
+在电脑桌面养一只傲娇小橘猫：摸摸它、逗它玩，连续戳它会哈气；和它聊天，它会记住你希望被怎么称呼。陪伴增加熟悉度，从警惕到偏爱，逐步解锁蹭头、翻肚皮等动作。它还能陪你专注，在待办到点时提醒你。
+
+当前为 **0.4.2 版**，已在本机运行验证。提供源码与安装说明，运行需要先安装宿主程序。
+
+**从这里开始：[安装与运行](#安装) · [测试与验证](docs/验证结果.md) · [角色系统设计](角色系统设计.md)**
+
+本作品基于[原版耄耋动画包](https://github.com/Edwardpch/maodie-pet)和[桌宠运行时](https://github.com/PC2005-cloud/dsh-pet)，新增聊天人设、长期记忆、关系成长、专注陪伴与待办提醒。技术插件标识为 `maodie-life`，对外介绍统一使用「桌面耄耋」。
 
 ![上游耄耋动画素材预览](vendor/maodie-pet/docs/preview.png)
 

@@ -1,8 +1,9 @@
 {
   "name":"maodie-life",
+  "displayName":"桌面耄耋",
   "version":"0.4.2",
   "type":"module",
-  "description":"耄耋桌宠养成：鼠标逗猫、记仇、喂食和专注陪伴",
+  "description":"桌面耄耋：会记仇、会记住你的傲娇猫咪，支持聊天、长期记忆、关系成长、专注陪伴与待办提醒。",
   "main":"src/plugin.mjs",
   "license":"MIT",
   "scripts":{"test":"node --test tests/*.test.mjs","open":"node src/open-panel.mjs"},
