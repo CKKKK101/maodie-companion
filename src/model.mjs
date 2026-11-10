@@ -55,6 +55,7 @@ export function reduce(input,event,now=Date.now()){
   if(!event||typeof event.type!=='string')throw new Error('事件类型无效');
   const s=settle(input,now),type=event.type;
   if(type==='tick')return s;
+  if(type==='goodbye'){action(s,now,'被摸','拜拜啦，今天就陪你到这里。下次再见！',6000);return s;}
   if(type==='heartbeat'){s.lastSeenAt=now;return s;}
   if(type==='return'){if(s.lastSeenAt&&now-s.lastSeenAt>=30*MINUTE&&s.relationshipStage>=2&&s.focus?.status!=='active')action(s,now,s.relationshipStage>=3?'翻肚皮':'蹭头撒娇',s.relationshipStage>=3?'回来了？旁边给你留着呢……我刚好没占。':'回来了？过来，今天可以摸一下。',7000);s.lastSeenAt=now;return s;}
   if(type==='settings'){if(typeof event.randomHiss!=='boolean')throw new Error('设置值无效');s.settings.randomHiss=event.randomHiss;return s;}

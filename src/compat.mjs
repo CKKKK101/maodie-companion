@@ -17,14 +17,20 @@ export async function installHooks({hostRoot,endpoint,backupDir}){
   ipcMain.handle('maodie-life:panel', async (event, endpoint, view = 'panel') => {
     const url = new URL(endpoint);
     if (url.protocol !== 'http:' || url.hostname !== '127.0.0.1' || url.pathname !== '/') throw new Error('养成面板地址无效');
-    if (!['panel','memories'].includes(view)) throw new Error('没有这个档案页面');
+    if (!['panel','memories','goodbye'].includes(view)) throw new Error('没有这个档案页面');
     let lifePanelWindow = lifePanelWindows.get(view);
     if (lifePanelWindow && !lifePanelWindow.isDestroyed()) { lifePanelWindow.show(); lifePanelWindow.focus(); return {ok:true}; }
-    lifePanelWindow = new BrowserWindow({ title: view === 'memories' ? '耄耋记忆与成长' : '耄耋成长档案', width: view === 'memories' ? 560 : 480, height: 770, minWidth: 440, minHeight: 700, autoHideMenuBar: true, backgroundColor: '#faf8f2', webPreferences: { contextIsolation: true, nodeIntegration: false } });
+    lifePanelWindow = new BrowserWindow({ title: view === 'goodbye' ? '耄耋 · 下次再见' : view === 'memories' ? '耄耋记忆与成长' : '耄耋成长档案', width: view === 'memories' ? 560 : 480, height: view === 'goodbye' ? 600 : 770, minWidth: 440, minHeight: view === 'goodbye' ? 560 : 700, autoHideMenuBar: true, backgroundColor: '#faf8f2', webPreferences: { contextIsolation: true, nodeIntegration: false } });
     lifePanelWindows.set(view, lifePanelWindow);
     lifePanelWindow.on('closed', () => { lifePanelWindows.delete(view); });
     await lifePanelWindow.loadURL(url.origin + '/' + view);
-    lifePanelWindow.show(); lifePanelWindow.focus(); return {ok:true};
+    lifePanelWindow.show(); lifePanelWindow.focus();
+    if (view === 'goodbye') {
+      const result = await fetch(url.origin + '/quit', {method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+      const data = await result.json();
+      if (!result.ok || !data.ok) throw new Error(data.message || '退出没有完成');
+    }
+    return {ok:true};
   });
   /* maodie-life:end */
 `]

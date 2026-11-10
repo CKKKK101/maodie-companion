@@ -7,6 +7,7 @@ import {installPetChatCompat} from './llm-compat.mjs';
 import {makeDeepSeekGenerator} from './generate.mjs';
 import {readFile} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
+import {prepareDesktopExit} from './desktop-exit.mjs';
 export const name='maodie-life';
 export const inject=['webServer','llm'];
 export async function apply(ctx){
@@ -22,7 +23,11 @@ export async function apply(ctx){
   const selectModel=async()=>{const cfg=JSON.parse(await readFile(path.join(home,'dsh-pet/pet/maodie-config.json'),'utf8'));const selected=cfg.chatModel;return selected?.provider&&selected?.model?{provider:selected.provider,model:selected.model}:{provider:'deepseek-account',model:'deepseek-v4-pro'};};
   const chatGenerate=makeDeepSeekGenerator({llm:ctx.llm,types,selectModel,signal:chatAbort.signal});
   const logger={warn:m=>ctx.logger?.warn?.(m),error:m=>ctx.logger?.error?.(m)};
-  const service=await startController({dataDir,hostBase,logger,chatGenerate});
+  const prepareQuit=async()=>{
+    const shutdown=await prepareDesktopExit({dataDir,petExecutable:path.join(home,'electron','electron.exe')});
+    return {cancelChat:()=>chatAbort.abort(),shutdown};
+  };
+  const service=await startController({dataDir,hostBase,logger,chatGenerate,prepareQuit});
   ctx.effect(()=>()=>service.close(),'maodie-life: controller');
   const patch=await installHooks({hostRoot,endpoint:service.endpoint,backupDir:path.join(dataDir,'host-backups',String(Date.now()))});
   ctx.logger?.info?.(`[maodie-life] 养成服务 ${service.endpoint}，存档 ${path.join(dataDir,'state.json')}`);

@@ -13,6 +13,8 @@
   function applyState(next){
     const beforeFocus=life?.focus?.status==='active';life=next;
     for(const s of sprites){if(!isMine(s))continue;
+      if(life.exit&&life.exit.status!=='error'){if(!s._lifeSayingGoodbye){s._lifeSayingGoodbye=true;s.stopMove();s.stopThrow();s.playOnce('被摸');s.showWhisper('拜拜啦，下次再陪你。',undefined,undefined,6000,false);}continue;}
+      s._lifeSayingGoodbye=false;
       s.pet.name=`耄耋 · ${life.relationship?.name||'相识中'} · ${life.mood}`;
       if(s.hit){s.hit.setAttribute('role','button');s.hit.setAttribute('aria-label',s.pet.name+'；左键摸头，右键互动');}
       if(!s._lifeReady){s._lifeReady=true;for(const v of [s.videoA,s.videoB]){v.addEventListener('playing',()=>report('playing',s));v.addEventListener('ended',()=>report('ended',s));}report('ready',s);if(typeof document!=='undefined')void event('return',s,'presence');}
@@ -67,10 +69,11 @@
       ]:[{label:'陪我专注 25 分钟',action:'life',event:'focus-start'}]),
       {label:'打开养成面板',action:'life',event:'panel-open'},
       {label:'原版动作与设置',action:'original'},
+      {label:'退出桌宠 · 拜拜啦',action:'quit'},
     ];
     this.menuOpen=true;this.setInteractive(true);this.syncInputBusy();window.__dshPetDebug.menuOpen=true;
     const menu=S.mountContextMenu({tree,x:e.clientX,y:e.clientY,clamp:this.visibleClampRect(),
-      onAction:leaf=>{this.closeMenu();if(leaf.action==='chat'){this.showChatFromMenu();report('menu',this,{message:'chat'});}else if(leaf.action==='todo'){this.toggleTodo();report('menu',this,{message:'todo'});}else if(leaf.action==='original')originals.context.call(this,e);else if(leaf.action==='life'){report('menu',this,{message:leaf.event});void event(leaf.event,this,'cat-menu');}},
+      onAction:leaf=>{this.closeMenu();if(leaf.action==='quit'){void Promise.resolve().then(()=>{if(typeof window.petBridge?.lifePanel!=='function')throw new Error('缺少桌面入口');return window.petBridge.lifePanel(ENDPOINT,'goodbye');}).catch(error=>this.showWhisper('退出界面未能打开，请重载桌宠后重试。',undefined,undefined,6000,false));}else if(leaf.action==='chat'){this.showChatFromMenu();report('menu',this,{message:'chat'});}else if(leaf.action==='todo'){this.toggleTodo();report('menu',this,{message:'todo'});}else if(leaf.action==='original')originals.context.call(this,e);else if(leaf.action==='life'){report('menu',this,{message:leaf.event});void event(leaf.event,this,'cat-menu');}},
       onClose:()=>{this.menuOpen=false;window.__dshPetDebug.menuOpen=false;this.syncInputBusy();if(!this.inputBusy())this.setInteractive(false);},
     });
     this.menuClose=menu.close;this.syncInputRegions();report('menu-open',this);
@@ -84,7 +87,7 @@
     this.bubble.replaceChildren(panel.el);this.todoPanel=panel;this.todoOpen=true;window.__dshPetDebug.todoOpen=true;this.renderBubble();this.syncInputBusy();this.setInteractive(true);
   };
   async function remindersTick(){
-    if(reminderBusy||!life||Date.now()<reminderUntil)return;
+    if(reminderBusy||!life||life.exit&&life.exit.status!=='error'||Date.now()<reminderUntil)return;
     const s=sprites.find(isMine);if(!s||s.todoOpen||s.menuOpen||s.dragState?.active)return;
     reminderBusy=true;
     try{
@@ -115,7 +118,7 @@
   // Existing renderer methods perform all geometry conversion, clipping and
   // window movement. The extension supplies only a bounded target and facing.
   async function cursorTick(){
-    if(busy||!life||!window.petBridge?.lifeCursor)return;busy=true;
+    if(busy||!life||life.exit&&life.exit.status!=='error'||!window.petBridge?.lifeCursor)return;busy=true;
     try{
       const point=await window.petBridge.lifeCursor(),now=Date.now();
       const dt=lastCursor?Math.max(1,now-lastCursor.at):1;

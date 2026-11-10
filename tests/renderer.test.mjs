@@ -52,7 +52,7 @@ test('到点从猫弹提醒，显示后才确认，打开待办时延后显示�
 
 test('右键猫直接显示养成入口，菜单派发喂食和打开面板，专注时显示暂停',async()=>{
   let state={level:1,mood:'熟悉中',affinity:15,food:2,action:null};
-  let mounted,originalOpened=0;const requests=[],intervals=[];
+  let mounted,originalOpened=0;const requests=[],intervals=[],openedPanels=[];
   class Sprite {
     constructor(){this.pet={id:'maodie'};this.dragState={};this.videoA=this.videoB={addEventListener(){}};}
     onClick(){} playIdle(){} onPointerUp(){} handleEnded(){} stopMove(){} stopThrow(){} setTip(){} setInteractive(){} syncInputBusy(){} syncInputRegions(){}
@@ -61,11 +61,12 @@ test('右键猫直接显示养成入口，菜单派发喂食和打开面板，�
     closeMenu(){this.menuClose?.();this.menuClose=null;this.menuOpen=false;}
     onContextMenu(){originalOpened++;}
   }
-  const sprite=new Sprite();const context=vm.createContext({PetSprite:Sprite,sprites:[sprite],Date,Math,AbortSignal,window:{__dshPetDebug:{}},S:{mountContextMenu(options){mounted=options;return {close(){options.onClose();}};}},setInterval(fn){intervals.push(fn);},fetch:async(url,options)=>{if(url.endsWith('/event'))requests.push(JSON.parse(options.body));return {ok:true,json:async()=>({ok:true,state:structuredClone(state)})};}});
+  const sprite=new Sprite();const context=vm.createContext({PetSprite:Sprite,sprites:[sprite],Date,Math,AbortSignal,window:{__dshPetDebug:{},petBridge:{lifePanel:async(endpoint,view)=>openedPanels.push(view)}},S:{mountContextMenu(options){mounted=options;return {close(){options.onClose();}};}},setInterval(fn){intervals.push(fn);},fetch:async(url,options)=>{if(url.endsWith('/event'))requests.push(JSON.parse(options.body));return {ok:true,json:async()=>({ok:true,state:structuredClone(state)})};}});
   vm.runInContext(code,context);await new Promise(resolve=>setImmediate(resolve));
   const click={clientX:300,clientY:250,preventDefault(){}};sprite.onContextMenu(click);
   assert.ok(mounted.tree.some(x=>x.label==='打开养成面板'));assert.ok(mounted.tree.some(x=>x.label.includes('剩余 2 份')));assert.equal(originalOpened,0);
   assert.ok(mounted.tree.some(x=>x.action==='chat'));assert.ok(mounted.tree.some(x=>x.action==='todo'));
+  const exit=mounted.tree.find(x=>x.action==='quit');assert.match(exit.label,/拜拜/);mounted.onAction(exit);await new Promise(resolve=>setImmediate(resolve));assert.deepEqual(openedPanels,['goodbye']);assert.equal(requests.length,0);sprite.onContextMenu(click);
   mounted.onAction(mounted.tree.find(x=>x.event==='feed'));await new Promise(resolve=>setImmediate(resolve));assert.equal(requests.at(-1).type,'feed');assert.equal(requests.at(-1).source,'cat-menu');assert.equal(sprite.menuOpen,false);
   sprite.onContextMenu(click);mounted.onAction(mounted.tree.find(x=>x.event==='panel-open'));await new Promise(resolve=>setImmediate(resolve));assert.equal(requests.at(-1).type,'panel-open');
   state={...state,focus:{status:'active'}};intervals[0]();await new Promise(resolve=>setImmediate(resolve));sprite.onContextMenu(click);assert.ok(mounted.tree.some(x=>x.label==='暂停专注'));assert.ok(!mounted.tree.some(x=>x.event==='focus-start'));

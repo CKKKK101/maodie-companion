@@ -1,7 +1,7 @@
 {
   "name":"maodie-life",
   "displayName":"桌面耄耋",
-  "version":"0.4.2",
+  "version":"0.4.3",
   "type":"module",
   "description":"桌面耄耋：会记仇、会记住你的傲娇猫咪，支持聊天、长期记忆、关系成长、专注陪伴与待办提醒。",
   "main":"src/plugin.mjs",
